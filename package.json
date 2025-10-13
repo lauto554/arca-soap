@@ -1,7 +1,7 @@
 {
-  "name": "express-typescript-app",
+  "name": "arca-soap",
   "version": "1.0.0",
-  "description": "Express app with TypeScript",
+  "description": "ARCA SOAP API - Backend service for SOAP integration",
   "main": "dist/index.js",
   "scripts": {
     "dev": "cross-env NODE_ENV=development nodemon",
@@ -10,13 +10,20 @@
     "clean": "rimraf dist"
   },
   "keywords": [
+    "arca",
+    "soap",
+    "api",
     "express",
     "typescript",
     "nodemon",
     "colors"
   ],
-  "author": "",
+  "author": "lauto554",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lauto554/arca-soap.git"
+  },
   "dependencies": {
     "colors": "1.4.0",
     "dotenv": "^17.2.3",

@@ -1,23 +1,19 @@
 import express, { Request, Response, Application, NextFunction } from "express";
-import router from "./router";
+import { ResponseModel } from "./backend-resources/models/ResponseModel";
+import morgan from "morgan";
+import testRouter from "./routers/testRouter";
+import arcaRouter from "./routers/arcaRouter";
 import "colors";
-import { ResponseModel } from "./backend-resources/models/Response";
 
-export function createServer(): Application {
+export function startServer(port: number): Application {
   const app: Application = express();
 
-  // Middleware básico
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
+  app.use(morgan("dev"));
 
-  // Middleware de logging personalizado con colors
-  app.use((req: Request, res: Response, next: NextFunction) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`.blue);
-    next();
-  });
-
-  // Usar las rutas del router
-  app.use("/", router);
+  app.use("/tests", testRouter);
+  app.use("/arca", arcaRouter);
 
   // Manejo de rutas no encontradas
   app.use("*", (req: Request, res: Response) => {
@@ -40,14 +36,13 @@ export function createServer(): Application {
     res.status(500).json(response);
   });
 
-  return app;
-}
-
-export function startServer(app: Application, port: number): void {
+  // Iniciar el servidor
   app.listen(port, () => {
     console.log(`--------------------------------------`.red);
     console.log(`Servidor ejecutándose en puerto ${port}`.red);
     console.log(`--------------------------------------`.red);
     console.log(`Environment: ${process.env.NODE_ENV}`.blue);
   });
+
+  return app;
 }

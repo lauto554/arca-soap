@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
 import { ResponseModel } from "../backend-resources/models/ResponseModel";
-import apiSupabase from "../backend-resources/models/supabase/apiSupabase";
 import { validateMethod } from "../backend-resources/utils";
 import { DatabasePgODBC } from "../backend-resources/models/DatabasePgODBC";
+import { ArcaAuth } from "../modules/arca/ArcaAuth";
+import apiSupabase from "../backend-resources/lib/apiSupabase";
 import "colors";
 
 export class TestsController {
@@ -35,9 +36,7 @@ export class TestsController {
         "SELECT version() as version, current_timestamp as now"
       );
 
-      const response = ResponseModel.create("success", 200, "db-test OK", {
-        result: result[0],
-      });
+      const response = ResponseModel.create("success", 200, "db-test OK", result[0]);
 
       res.json(response);
     } catch (error) {
@@ -62,24 +61,16 @@ export class TestsController {
     try {
       if (!validateMethod(req, res, "GET")) return;
 
-      console.log("Iniciando test de ArcaAuth...".cyan);
-      const empresa = 2;
+      const result = await ArcaAuth.getTokenAccess("wsfe", 1, "homo");
 
-      const obtienePemKey = await DatabasePgODBC.query(
-        "SELECT ea.pem,ea.key FROM empresas_afip ea WHERE ea.empresa=?;",
-        [empresa]
-      );
+      console.log(result);
 
-      if (obtienePemKey.count === 0) {
-        res.json(ResponseModel.create("error", 404, "Sin datos para la empresa"));
+      if (result.code === -1) {
+        res.status(200).json(ResponseModel.create("error", 500, result.message));
         return;
       }
 
-      console.log("------------------------------------".yellow);
-      console.log(obtienePemKey);
-      console.log("------------------------------------".yellow);
-
-      res.json(ResponseModel.create("success", 200, "testPEM OK", obtienePemKey[0]));
+      res.json(ResponseModel.create("success", 200, "testPEM OK", result));
     } catch (error) {
       console.log("Error en test de ArcaAuth:".red);
       console.log(error);
@@ -89,13 +80,15 @@ export class TestsController {
   static async testSupabase(req: Request, res: Response): Promise<void> {
     if (!validateMethod(req, res, "GET")) return;
     try {
-      const url = `/rest/v1/rpc/obtiene_afipacceso`;
-      const payload = {
-        p_empresa: 1,
-        p_modo: "homo",
-      };
+      //   const url = `/rest/v1/rpc/obtiene_afipacceso`;
+      //   const payload = {
+      //     p_empresa: 1,
+      //     p_modo: "homo",
+      //   };
 
-      const request = await apiSupabase.post(url, payload);
+      const url = `/rest/v1/empresas_afip?empresa=eq.1&select=pem,key`;
+
+      const request = await apiSupabase.get(url);
 
       const response = request.data as any[];
 

@@ -2,49 +2,28 @@ import { Request, Response } from "express";
 import { ResponseModel } from "../backend-resources/models/ResponseModel";
 import { DatabasePgODBC } from "../backend-resources/models/DatabasePgODBC";
 import { obtieneAfipAccesoResponse } from "@/types/authTypes";
-import { ArcaAuth } from "@/modules/arca/ArcaAuth";
+import { ArcaAuth } from "../modules/arca/ArcaAuth";
 import { validateMethod } from "../backend-resources/utils";
-import apiSupabase from "../backend-resources/models/supabase/apiSupabase";
-import axios from "axios";
 import "colors";
 
 export class ArcaAuthController {
-  static async loginCMS(req: Request, res: Response): Promise<void> {
+  static async obtenerAfipAcceso(req: Request, res: Response): Promise<void> {
     try {
-      if (!validateMethod(req, res, "POST")) return;
+      if (!validateMethod(req, res, "GET")) return;
 
       const { empresa, modo } = req.params;
+      const empresaNum = Number(empresa);
 
-      const existeEmpresa = await DatabasePgODBC.query(
-        "SELECT 1 as existe FROM empresas e WHERE e.empresa=? AND e.inha=0;",
-        [empresa]
-      );
+      const result = await ArcaAuth.getTokenAccess("wsfe", empresaNum, modo);
 
-      if (existeEmpresa.count === 0) {
-        const response = ResponseModel.create("error", 404, "Empresa no encontrada o inhabilitada");
-        res.status(404).json(response);
+      if (result.code === -1) {
+        res.json(ResponseModel.create("success", 204, `${result.data.message}`));
         return;
       }
 
-      const obtieneAfipAcceso = await DatabasePgODBC.query(
-        "SELECT * FROM obtiene_afipacceso(?, ?);",
-        [empresa, modo]
-      );
-
-      const afipAcceso = obtieneAfipAcceso[0] as obtieneAfipAccesoResponse;
-
-      if (afipAcceso.status === "valid") {
-        res.status(200).json(ResponseModel.create("success", 200, "loginCMS OK", afipAcceso));
-        return;
-      }
-
-      // const getTokenSign = await ArcaAuth.getTokenAccess(empresa, modo);
-
-      const response = ResponseModel.create("error", 404, "Sin integracion con ARCA");
-
-      res.json(response);
+      res.json(ResponseModel.create("success", 200, "obtenerAfipAcceso OK", result));
     } catch (error) {
-      const response = ResponseModel.create("error", 500, "Error en loginCMS", { error });
+      const response = ResponseModel.create("error", 500, "Error en obtenerAfipAcceso", { error });
       res.status(500).json(response);
     }
   }

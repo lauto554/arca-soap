@@ -5,6 +5,10 @@ import "colors";
 
 const arcaRouter = Router();
 
-arcaRouter.all("/loginCMS/:empresa/:modo", validateEmpresaModo, ArcaAuthController.loginCMS);
+arcaRouter.all(
+  "/obtenerAfipAcceso/:empresa/:modo",
+  validateEmpresaModo,
+  ArcaAuthController.obtenerAfipAcceso
+);
 
 export default arcaRouter;

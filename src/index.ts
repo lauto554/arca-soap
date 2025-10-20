@@ -10,7 +10,7 @@ async function startApplication(): Promise<void> {
   try {
     startServer(PORT);
 
-    // await initializeDatabase();
+    await initializeDatabase();
   } catch (error) {
     console.error("Error al iniciar la aplicación:".red, error);
     process.exit(1);

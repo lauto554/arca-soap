@@ -9,15 +9,6 @@
     "start": "node dist/index.js",
     "clean": "rimraf dist"
   },
-  "keywords": [
-    "arca",
-    "soap",
-    "api",
-    "express",
-    "typescript",
-    "nodemon",
-    "colors"
-  ],
   "author": "lauto554",
   "license": "ISC",
   "repository": {

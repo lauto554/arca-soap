@@ -1,14 +1,11 @@
-import * as fs from "fs/promises";
-import * as path from "path";
 import { spawn } from "child_process";
-import * as https from "https";
-import { ResponseModel } from "../../backend-resources/models/ResponseModel";
-import { DatabasePgODBC } from "../../backend-resources/models/DatabasePgODBC";
-import "colors";
+import { Supabase } from "../../backend-resources/models/Supabase";
+import { SupabaseService } from "../../services/SupabaseService";
 import apiSupabase from "../../backend-resources/lib/apiSupabase";
 import apiArca from "../..//lib/apiArca";
-import { UrlWithStringQuery } from "url";
-import { obtieneAfipAccesoResponse } from "@/types/authTypes";
+import * as path from "path";
+import * as fs from "fs/promises";
+import "colors";
 
 export class ArcaAuth {
   static async generateLoginTicketRequest(service: string = "wsfe"): Promise<string> {
@@ -221,29 +218,20 @@ export class ArcaAuth {
 
   static async getTokenAccess(service: string, empresa: number, modo: string): Promise<any> {
     try {
-      const url1 = `/rest/v1/empresas?empresa=eq.${empresa}&inha=eq.0`;
-      const existeEmpresa = await apiSupabase.get(url1);
+      const existeEmpresa = await Supabase.obtieneEmpresa(empresa);
 
       if (!existeEmpresa) {
         return "Empresa no encontrada o inhabilitada";
       }
 
-      const url2 = `/rest/v1/rpc/obtiene_afipacceso`;
-      const payload = {
-        p_empresa: empresa,
-        p_modo: modo,
-      };
-
-      const obtieneAfipAcceso = await apiSupabase.post(url2, payload);
-
-      const afipAccesoData = obtieneAfipAcceso.data as obtieneAfipAccesoResponse[] | undefined;
+      const obtenerAfipAcceso = await SupabaseService.obtieneAfipAcceso(empresa, modo);
 
       if (
-        afipAccesoData &&
-        Array.isArray(afipAccesoData) &&
-        afipAccesoData[0]?.status === "valid"
+        obtenerAfipAcceso &&
+        Array.isArray(obtenerAfipAcceso) &&
+        obtenerAfipAcceso[0]?.status === "valid"
       ) {
-        return afipAccesoData[0];
+        return obtenerAfipAcceso[0];
       }
 
       const signedCMS = await this.createSignedTokenRequest(service, empresa);

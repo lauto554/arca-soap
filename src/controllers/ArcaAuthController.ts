@@ -1,7 +1,5 @@
 import { Request, Response } from "express";
 import { ResponseModel } from "../backend-resources/models/ResponseModel";
-import { DatabasePgODBC } from "../backend-resources/models/DatabasePgODBC";
-import { obtieneAfipAccesoResponse } from "@/types/authTypes";
 import { ArcaAuth } from "../modules/arca/ArcaAuth";
 import { validateMethod } from "../backend-resources/utils";
 import "colors";
